@@ -1,32 +1,9 @@
-# Build stage
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
-WORKDIR /src
-
-# Copy solution and project files
-COPY LANCommander.UDPRelay.slnx .
-COPY LANCommander.UDPRelay.Core/LANCommander.UDPRelay.Core.csproj LANCommander.UDPRelay.Core/
-COPY LANCommander.UDPRelay/LANCommander.UDPRelay.csproj LANCommander.UDPRelay/
-
-# Restore dependencies
-RUN dotnet restore LANCommander.UDPRelay.slnx
-
-# Copy all source files
-COPY LANCommander.UDPRelay.Core/ LANCommander.UDPRelay.Core/
-COPY LANCommander.UDPRelay/ LANCommander.UDPRelay/
-
-# Build the application
-RUN dotnet build LANCommander.UDPRelay.slnx -c Release --no-restore -o /app/build
-
-# Publish stage
-FROM build AS publish
-RUN dotnet publish LANCommander.UDPRelay/LANCommander.UDPRelay.csproj -c Release --no-build -o /app/publish
-
-# Runtime stage
+# Runtime stage - expects pre-built artifacts in ./publish directory
 FROM mcr.microsoft.com/dotnet/runtime:10.0 AS final
 WORKDIR /app
 
-# Copy published application
-COPY --from=publish /app/publish .
+# Copy published application (built by GitHub Actions)
+COPY publish .
 
 # Create a non-root user for security
 RUN groupadd -r udprelay && useradd -r -g udprelay udprelay
