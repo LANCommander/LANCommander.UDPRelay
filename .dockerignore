@@ -1,0 +1,33 @@
+# Build outputs
+**/bin/
+**/obj/
+
+# IDE files
+**/.vs/
+**/.vscode/
+**/.idea/
+**/*.user
+**/*.suo
+**/*.sln.docstates
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker
+Dockerfile*
+.dockerignore
+docker-compose*.yml
+
+# Documentation
+README.md
+LICENSE
+*.md
+
+# Solution files (we use .slnx)
+*.sln
+
+# OS files
+.DS_Store
+Thumbs.db

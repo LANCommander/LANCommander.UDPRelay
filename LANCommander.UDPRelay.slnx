@@ -1,0 +1,9 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="LANCommander.UDPRelay.Core/LANCommander.UDPRelay.Core.csproj" />
+  <Project Path="LANCommander.UDPRelay/LANCommander.UDPRelay.csproj" />
+</Solution>

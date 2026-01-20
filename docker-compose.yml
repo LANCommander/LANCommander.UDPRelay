@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  udp-relay:
+    image: lancommander/udprelay:latest
+    container_name: udp-relay
+    network_mode: host
+    # Required: Mount Docker socket so the relay can discover containers
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      # Optional: Override Docker endpoint (default: unix:///var/run/docker.sock)
+      # DOCKER_ENDPOINT: unix:///var/run/docker.sock
+      
+      # Optional: Override relay service name (default: auto-detected from compose labels)
+      # RELAY_SERVICE_NAME: udp-relay
+      
+      # Optional: Override compose project name (default: auto-detected from labels)
+      # COMPOSE_PROJECT: myproject
+      
+      # Optional: Preferred network for container IP fallback
+      # PREFERRED_TARGET_NETWORK: mynetwork
+      
+      # Optional: Fallback to container IP when no published port (default: true)
+      # FALLBACK_TO_CONTAINER_IP: "true"
+      
+      # Optional: Default host forward address (default: 127.0.0.1)
+      # DEFAULT_HOST_FORWARD_IP: 127.0.0.1
+    restart: unless-stopped
+    # Note: UDP ports are dynamically bound based on discovered containers.
+    # The relay will automatically listen on ports exposed by dependent containers.
