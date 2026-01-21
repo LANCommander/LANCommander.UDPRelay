@@ -12,6 +12,9 @@ services:
     # If you still get "Permission denied" errors, you may need to run as root:
     # user: "0:0"
     environment:
+      # Required: Container name or ID prefix to identify this relay container
+      RELAY_CONTAINER_ID: udp-relay
+      
       # Optional: Override Docker endpoint (default: unix:///var/run/docker.sock)
       # DOCKER_ENDPOINT: unix:///var/run/docker.sock
       

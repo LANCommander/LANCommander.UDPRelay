@@ -18,18 +18,31 @@ public sealed class DockerDiscovery
     public async Task<(string relayContainerId, string relayServiceName, string? composeProject)> GetRelayIdentityAsync(CancellationToken ct)
     {
         var hostname = Environment.GetEnvironmentVariable("HOSTNAME") ?? "";
-        if (hostname.Length < 8)
-            throw new InvalidOperationException("HOSTNAME did not look like a container id prefix. Provide RELAY_CONTAINER_ID explicitly.");
-
         var relayIdPrefix = Environment.GetEnvironmentVariable("RELAY_CONTAINER_ID");
         if (!string.IsNullOrWhiteSpace(relayIdPrefix))
             hostname = relayIdPrefix.Trim();
 
+        if (string.IsNullOrWhiteSpace(hostname))
+            throw new InvalidOperationException("HOSTNAME or RELAY_CONTAINER_ID must be set to identify the relay container.");
+
         var containers = await _docker.Containers.ListContainersAsync(new ContainersListParameters { All = true }, ct);
+        
+        // Try matching by container ID prefix first
         var relay = containers.FirstOrDefault(c => c.ID.StartsWith(hostname, StringComparison.OrdinalIgnoreCase));
+        
+        // If not found by ID, try matching by container name
+        if (relay is null)
+        {
+            relay = containers.FirstOrDefault(c => 
+                c.Names?.Any(name => 
+                    name.TrimStart('/').Equals(hostname, StringComparison.OrdinalIgnoreCase) ||
+                    name.TrimStart('/').StartsWith(hostname, StringComparison.OrdinalIgnoreCase)
+                ) == true
+            );
+        }
 
         if (relay is null)
-            throw new InvalidOperationException($"Could not locate relay container by id prefix '{hostname}'.");
+            throw new InvalidOperationException($"Could not locate relay container by id prefix or name '{hostname}'. Available containers: {string.Join(", ", containers.Select(c => $"{c.ID[..12]} ({string.Join(", ", c.Names ?? Array.Empty<string>())})"))}");
 
         var inspect = await _docker.Containers.InspectContainerAsync(relay.ID, ct);
 
