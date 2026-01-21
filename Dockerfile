@@ -2,9 +2,9 @@
 FROM mcr.microsoft.com/dotnet/runtime:10.0 AS final
 WORKDIR /app
 
-# Install su-exec for switching users (lightweight alternative to gosu)
+# Install gosu for switching users (available in Debian repos)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends su-exec && \
+    apt-get install -y --no-install-recommends gosu && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy published application (built by GitHub Actions)

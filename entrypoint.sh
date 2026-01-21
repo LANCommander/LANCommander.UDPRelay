@@ -44,9 +44,9 @@ if [ -e "$DOCKER_SOCK" ]; then
 fi
 
 # Switch to non-root user and run the application
-# Use su-exec if available, otherwise fall back to su
-if command -v su-exec >/dev/null 2>&1; then
-    exec su-exec udprelay "$@"
+# Use gosu if available, otherwise fall back to su
+if command -v gosu >/dev/null 2>&1; then
+    exec gosu udprelay "$@"
 else
     # Fallback to su (less ideal but works)
     exec su -s /bin/sh udprelay -c "exec \"\$@\"" -- "$@"
