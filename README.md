@@ -211,6 +211,13 @@ Contains the application entry point:
 
 - Ensure Docker socket is mounted: `-v /var/run/docker.sock:/var/run/docker.sock:ro`
 - On Windows, you may need to use named pipes: `npipe:////./pipe/docker_engine`
+- **Permission denied errors**: If you see `System.Net.Sockets.SocketException (13): Permission denied`:
+  - The container automatically detects the Docker socket's group GID at runtime and adjusts permissions accordingly
+  - **No rebuild or root access required** - the entrypoint script handles this automatically
+  - If automatic detection fails, you can still:
+    - **Option 1**: Rebuild the image with the correct GID: `docker build --build-arg DOCKER_GID=<host_gid> -t lancommander/udprelay:latest .`
+      - Find your host's docker GID: `getent group docker | cut -d: -f3`
+    - **Option 2**: Run as root in docker-compose.yml by adding `user: "0:0"` (less secure but works everywhere)
 
 ## Development
 

@@ -8,6 +8,9 @@ services:
     # Required: Mount Docker socket so the relay can discover containers
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    # Note: The container automatically detects and adjusts to the Docker socket's group permissions.
+    # If you still get "Permission denied" errors, you may need to run as root:
+    # user: "0:0"
     environment:
       # Optional: Override Docker endpoint (default: unix:///var/run/docker.sock)
       # DOCKER_ENDPOINT: unix:///var/run/docker.sock
