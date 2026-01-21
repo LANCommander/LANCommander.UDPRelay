@@ -81,23 +81,15 @@ public sealed class DockerDiscovery
         {
             var inspect = await _docker.Containers.InspectContainerAsync(c.ID, ct);
 
-            // Scope to compose project if known.
-            if (!string.IsNullOrWhiteSpace(composeProject))
+            // Check if container has UDP relay enabled via custom label.
+            var udpRelayEnabled = false;
+            if (inspect.Config?.Labels is not null &&
+                inspect.Config.Labels.TryGetValue("app.lancommander.udprelay.enabled", out var enabledValue))
             {
-                var labels = inspect.Config?.Labels ?? new Dictionary<string, string>();
-                if (!labels.TryGetValue("com.docker.compose.project", out var p) ||
-                    !string.Equals(p, composeProject, StringComparison.Ordinal))
-                {
-                    continue;
-                }
+                udpRelayEnabled = string.Equals(enabledValue, "true", StringComparison.OrdinalIgnoreCase);
             }
 
-            // Determine dependency on relay via Compose label.
-            var dependsOnLabel = "";
-            if (inspect.Config?.Labels is not null)
-                inspect.Config.Labels.TryGetValue("com.docker.compose.depends_on", out dependsOnLabel);
-
-            if (string.IsNullOrWhiteSpace(dependsOnLabel) || !DependsOnContainsService(dependsOnLabel, relayServiceName))
+            if (!udpRelayEnabled)
                 continue;
 
             // Exposed internal UDP ports (these drive which listen ports we bind)
@@ -174,16 +166,6 @@ public sealed class DockerDiscovery
             return ip;
 
         return _options.DefaultHostForwardAddress;
-    }
-
-    private static bool DependsOnContainsService(string dependsOnLabelValue, string relayServiceName)
-    {
-        var tokens = dependsOnLabelValue
-            .Split(new[] { ',', ' ', ';', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(t => t.Trim().Trim('"', '\'', '[', ']', '{', '}', '(', ')'))
-            .Where(t => !string.IsNullOrWhiteSpace(t));
-
-        return tokens.Any(t => string.Equals(t, relayServiceName, StringComparison.OrdinalIgnoreCase));
     }
 
     private static HashSet<int> GetExposedUdpPorts(ContainerInspectResponse inspect)
